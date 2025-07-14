@@ -262,8 +262,7 @@ void mutate_individuals() {
 
 			pid_population[population_num].pid.Kp = fmax(0,
 					pid_population[population_num].pid.Kp
-							+ ((float) rand() / RAND_MAX) * del_Kp
-							- del_Kp / 2);
+							+ ((float) rand() / RAND_MAX) * del_Kp	- del_Kp / 2);
 
 			pid_population[population_num].pid.Ki = fmax(0,
 					pid_population[population_num].pid.Ki
@@ -322,7 +321,7 @@ void SimulateMotors(PID_Coefficients pid_coeffs,
 
 	uint64_t current_time = 0;
 	uint64_t old_time1 = 0, old_time2 = 0, old_time3 = 0;
-	float dt1 = 0, dt2 = 0, dt3 = 0;
+	float dt1 = 0, dt2 = 0, dt3 = 0; // dt1-simulation_time checker.dt2-motor1_pid_interval time checker, dt3-motor2_pid_interval time checker
 
 	old_time1 = HAL_GetTick();
 	old_time2 = HAL_GetTick();
@@ -334,8 +333,8 @@ void SimulateMotors(PID_Coefficients pid_coeffs,
 
 	motor1_status.speed_target = target_speed;
 	motor2_status.speed_target = target_speed;
-	motor1_status.position = 0;
-	motor2_status.position = 0;
+//	motor1_status.position = 0;
+//	motor2_status.position = 0;
 
 #if TEST_MOTOR1_PID
 
@@ -386,6 +385,7 @@ void SimulateMotors(PID_Coefficients pid_coeffs,
 
 			duty_correction1 = PID_Compute(&pid_sync, motor2_status.speed_calc,
 					motor1_status.speed_calc, MAX_SPEED, dt2);
+
 			duty_cycle1 = PID_Compute(&pid_motor1, motor1_status.speed_target,
 					motor1_status.speed_calc, MAX_SPEED, dt2)
 					+ duty_correction1;
@@ -432,10 +432,20 @@ void SimulateMotors(PID_Coefficients pid_coeffs,
 #elif TUNE_MOTOR1
 	pid_population[population_num].fitness = 1 / (1 + speed_diff_error_sum);
 #else
-	pid_population[population_num].fitness = 1
-			/ (1 + w1 * (metrics.rise_time >= MIN_RISE_TIME ? (metrics.rise_time - MIN_RISE_TIME) : 1e6)
-					+ w2 * (metrics.settling_time >= MIN_SETTLING_TIME ? (metrics.settling_time - MIN_SETTLING_TIME) : 1e6)
-					+ w3 * metrics.max_deviation + w4 * error_sum);
+	pid_population[population_num].fitness =
+			1
+					/ (1
+							+ w1
+									* (metrics.rise_time >= MIN_RISE_TIME ?
+											(metrics.rise_time - MIN_RISE_TIME) :
+											1e6)
+							+ w2
+									* (metrics.settling_time
+											>= MIN_SETTLING_TIME ?
+											(metrics.settling_time
+													- MIN_SETTLING_TIME) :
+											1e6) + w3 * metrics.max_deviation
+							+ w4 * error_sum);
 #endif
 }
 

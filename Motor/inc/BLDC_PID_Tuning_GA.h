@@ -20,10 +20,13 @@
 #include "motor1.h"
 #include "motor2.h"
 
-#define TUNE_MOTOR1 0
+#define TUNE_MOTOR1 1
 #define TUNE_MOTOR2 0
-#define TEST_MOTOR1_PID 1
+#define TEST_MOTOR1_PID 0
 #define TEST_MOTOR2_PID 0
+
+
+
 #define PRINT_ALL 0
 
 #define POPULATION_SIZE 50
